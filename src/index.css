@@ -6,6 +6,58 @@
 
 @layer base {
   :root {
+    --background: 210 20% 96%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 160 84% 36%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 92%;
+    --secondary-foreground: 222 30% 20%;
+
+    --muted: 210 15% 90%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 20% 92%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --income: 160 84% 36%;
+    --income-foreground: 0 0% 100%;
+    --expense: 0 72% 55%;
+    --expense-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 90%;
+    --ring: 160 84% 36%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 160 84% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 92%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 20% 88%;
+    --sidebar-ring: 160 84% 36%;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --shadow-card: 0 4px 24px -4px hsla(222, 20%, 50%, 0.1);
+    --shadow-elevated: 0 8px 32px -8px hsla(222, 20%, 50%, 0.15);
+  }
+
+  .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
 
@@ -39,8 +91,6 @@
     --input: 222 30% 16%;
     --ring: 160 84% 40%;
 
-    --radius: 0.75rem;
-
     --sidebar-background: 222 44% 9%;
     --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 160 84% 40%;
@@ -49,9 +99,6 @@
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 222 30% 18%;
     --sidebar-ring: 160 84% 40%;
-
-    --font-heading: 'Space Grotesk', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
 
     --shadow-card: 0 4px 24px -4px hsla(222, 47%, 4%, 0.5);
     --shadow-elevated: 0 8px 32px -8px hsla(222, 47%, 4%, 0.6);
