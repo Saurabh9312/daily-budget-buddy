@@ -9,7 +9,7 @@ interface AuthState {
     initialize: () => void;
 }
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = 'https://daily-budget-buddy-backend.onrender.com/api';
 
 export const useAuthStore = create<AuthState>((set) => ({
     token: null,

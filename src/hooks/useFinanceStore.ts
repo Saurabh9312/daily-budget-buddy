@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAuthStore } from './useAuthStore';
 import { BankAccount, Transaction, MonthlyData } from '@/types/finance';
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = 'https://daily-budget-buddy-backend.onrender.com/api';
 
 const ACCOUNT_COLORS = [
   'hsl(160, 84%, 40%)',

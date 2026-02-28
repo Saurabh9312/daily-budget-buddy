@@ -25,7 +25,7 @@ export default function UserProfileModal() {
     const handleOpen = () => {
         setName(profile?.name || '');
         setDob(profile?.dob || '');
-        setPreview(profile?.profile_picture ? `http://127.0.0.1:8000${profile.profile_picture}` : null);
+        setPreview(profile?.profile_picture ? `https://daily-budget-buddy-backend.onrender.com${profile.profile_picture}` : null);
         setFile(null);
         setOpen(true);
     };
@@ -59,7 +59,7 @@ export default function UserProfileModal() {
         }
     };
 
-    const avatarSrc = profile?.profile_picture ? `http://127.0.0.1:8000${profile.profile_picture}` : null;
+    const avatarSrc = profile?.profile_picture ? `https://daily-budget-buddy-backend.onrender.com${profile.profile_picture}` : null;
 
     return (
         <Dialog open={open} onOpenChange={(val) => {
