@@ -6,7 +6,7 @@ import { BankAccount } from '@/types/finance';
 
 interface AccountManagerProps {
   accounts: BankAccount[];
-  addAccount: (name: string) => BankAccount;
+  addAccount: (name: string) => Promise<any> | void;
   deleteAccount: (id: string) => void;
   getAccountBalance: (id: string) => number;
 }
@@ -49,12 +49,12 @@ export default function AccountManager({ accounts, addAccount, deleteAccount, ge
           {accounts.map(acc => {
             const bal = getAccountBalance(acc.id);
             return (
-              <div key={acc.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50 group">
+              <div key={acc.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50 group gap-3 sm:gap-0">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: acc.color }} />
                   <span className="font-medium">{acc.name}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
                   <span className={`font-heading font-semibold ${bal >= 0 ? 'text-income' : 'text-expense'}`}>
                     {formatCurrency(bal)}
                   </span>
@@ -62,7 +62,7 @@ export default function AccountManager({ accounts, addAccount, deleteAccount, ge
                     variant="ghost"
                     size="sm"
                     onClick={() => deleteAccount(acc.id)}
-                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-expense transition-opacity"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-expense transition-opacity"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

@@ -1,8 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useAuthStore } from './useAuthStore';
 import { BankAccount, Transaction, MonthlyData } from '@/types/finance';
 
-const ACCOUNTS_KEY = 'finance_accounts';
-const TRANSACTIONS_KEY = 'finance_transactions';
+const API_BASE = 'http://127.0.0.1:8000/api';
 
 const ACCOUNT_COLORS = [
   'hsl(160, 84%, 40%)',
@@ -13,91 +13,116 @@ const ACCOUNT_COLORS = [
   'hsl(180, 70%, 45%)',
 ];
 
-function loadFromStorage<T>(key: string, fallback: T): T {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveToStorage<T>(key: string, data: T) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
 export function useFinanceStore() {
-  const [accounts, setAccounts] = useState<BankAccount[]>(() =>
-    loadFromStorage(ACCOUNTS_KEY, [])
-  );
-  const [transactions, setTransactions] = useState<Transaction[]>(() =>
-    loadFromStorage(TRANSACTIONS_KEY, [])
-  );
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addAccount = useCallback((name: string) => {
-    const account: BankAccount = {
-      id: crypto.randomUUID(),
-      name,
-      color: ACCOUNT_COLORS[accounts.length % ACCOUNT_COLORS.length],
-      createdAt: new Date().toISOString(),
+  const token = useAuthStore(state => state.token);
+  const getHeaders = useCallback(() => {
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
-    setAccounts(prev => {
-      const next = [...prev, account];
-      saveToStorage(ACCOUNTS_KEY, next);
-      return next;
-    });
-    return account;
+  }, [token]);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!token) return;
+      try {
+        const [accRes, txRes] = await Promise.all([
+          fetch(`${API_BASE}/accounts/`, { headers: getHeaders() }),
+          fetch(`${API_BASE}/transactions/`, { headers: getHeaders() })
+        ]);
+        if (accRes.ok && txRes.ok) {
+          const accData = await accRes.json();
+          const txData = await txRes.json();
+          setAccounts(accData);
+          setTransactions(txData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch data', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [getHeaders, token]);
+
+  const addAccount = useCallback(async (name: string) => {
+    const color = ACCOUNT_COLORS[accounts.length % ACCOUNT_COLORS.length];
+    try {
+      const res = await fetch(`${API_BASE}/accounts/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ name, color }),
+      });
+      const account = await res.json();
+      setAccounts(prev => [account, ...prev]);
+      return account;
+    } catch (err) {
+      console.error('Failed to add account', err);
+    }
   }, [accounts.length]);
 
-  const deleteAccount = useCallback((id: string) => {
-    setAccounts(prev => {
-      const next = prev.filter(a => a.id !== id);
-      saveToStorage(ACCOUNTS_KEY, next);
-      return next;
-    });
-    setTransactions(prev => {
-      const next = prev.filter(t => t.accountId !== id);
-      saveToStorage(TRANSACTIONS_KEY, next);
-      return next;
-    });
+  const deleteAccount = useCallback(async (id: string) => {
+    try {
+      await fetch(`${API_BASE}/accounts/${id}/`, { method: 'DELETE', headers: getHeaders() });
+      setAccounts(prev => prev.filter(a => a.id !== id));
+      setTransactions(prev => prev.filter(t => t.accountId !== id));
+    } catch (err) {
+      console.error('Failed to delete account', err);
+    }
   }, []);
 
-  const addTransaction = useCallback((tx: Omit<Transaction, 'id' | 'createdAt'>) => {
-    const transaction: Transaction = {
-      ...tx,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
-    setTransactions(prev => {
-      const next = [transaction, ...prev];
-      saveToStorage(TRANSACTIONS_KEY, next);
-      return next;
-    });
+  const addTransaction = useCallback(async (tx: Omit<Transaction, 'id' | 'createdAt'>) => {
+    try {
+      const res = await fetch(`${API_BASE}/transactions/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({
+          ...tx,
+        }),
+      });
+      const transaction = await res.json();
+      setTransactions(prev => [transaction, ...prev]);
+    } catch (err) {
+      console.error('Failed to add transaction', err);
+    }
   }, []);
 
-  const updateTransaction = useCallback((id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => {
-    setTransactions(prev => {
-      const next = prev.map(t => t.id === id ? { ...t, ...updates } : t);
-      saveToStorage(TRANSACTIONS_KEY, next);
-      return next;
-    });
-  }, []);
+  const updateTransaction = useCallback(async (id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => {
+    const existing = transactions.find(t => t.id === id);
+    if (!existing) return;
+    try {
+      const res = await fetch(`${API_BASE}/transactions/${id}/`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify({ ...existing, ...updates }),
+      });
+      const updatedTx = await res.json();
+      setTransactions(prev => prev.map(t => t.id === id ? updatedTx : t));
+    } catch (err) {
+      console.error('Failed to update transaction', err);
+    }
+  }, [transactions]);
 
-  const deleteTransaction = useCallback((id: string) => {
-    setTransactions(prev => {
-      const next = prev.filter(t => t.id !== id);
-      saveToStorage(TRANSACTIONS_KEY, next);
-      return next;
-    });
+  const deleteTransaction = useCallback(async (id: string) => {
+    try {
+      await fetch(`${API_BASE}/transactions/${id}/`, { method: 'DELETE', headers: getHeaders() });
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      console.error('Failed to delete transaction', err);
+    }
   }, []);
 
   const totalIncome = useMemo(() =>
-    transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+    transactions.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
     [transactions]
   );
 
   const totalExpense = useMemo(() =>
-    transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+    transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0),
     [transactions]
   );
 
@@ -106,7 +131,7 @@ export function useFinanceStore() {
   const getAccountBalance = useCallback((accountId: string) => {
     return transactions
       .filter(t => t.accountId === accountId)
-      .reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+      .reduce((s, t) => s + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
   }, [transactions]);
 
   const monthlyData = useMemo((): MonthlyData[] => {
@@ -119,8 +144,8 @@ export function useFinanceStore() {
         map.set(key, { month: monthNames[d.getMonth()], year: d.getFullYear(), income: 0, expense: 0, net: 0 });
       }
       const entry = map.get(key)!;
-      if (t.type === 'income') entry.income += t.amount;
-      else entry.expense += t.amount;
+      if (t.type === 'income') entry.income += Number(t.amount);
+      else entry.expense += Number(t.amount);
       entry.net = entry.income - entry.expense;
     });
     return Array.from(map.values()).sort((a, b) => {
@@ -137,7 +162,7 @@ export function useFinanceStore() {
   }, [monthlyData]);
 
   return {
-    accounts, transactions,
+    accounts, transactions, loading,
     addAccount, deleteAccount,
     addTransaction, updateTransaction, deleteTransaction,
     totalIncome, totalExpense, balance,

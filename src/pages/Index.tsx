@@ -1,8 +1,12 @@
-import { useState } from 'react';
-import { Wallet } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useAuthStore } from '@/hooks/useAuthStore';
 import { useFinanceStore } from '@/hooks/useFinanceStore';
+import { useProfileStore } from '@/hooks/useProfileStore';
 import Dashboard from '@/components/Dashboard';
+import UserProfileModal from '@/components/UserProfileModal';
 import AccountManager from '@/components/AccountManager';
 import TransactionForm from '@/components/TransactionForm';
 import TransactionList from '@/components/TransactionList';
@@ -11,7 +15,21 @@ import { Transaction } from '@/types/finance';
 
 const Index = () => {
   const store = useFinanceStore();
+  const logout = useAuthStore(state => state.logout);
+  const { fetchProfile } = useProfileStore();
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  if (store.loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,7 +45,13 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">Smart finance management</p>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <UserProfileModal />
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => logout()} aria-label="Log out">
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
