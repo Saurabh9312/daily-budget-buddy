@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Wallet } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 import { useFinanceStore } from '@/hooks/useFinanceStore';
 import Dashboard from '@/components/Dashboard';
 import AccountManager from '@/components/AccountManager';
@@ -16,14 +17,17 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Wallet className="w-6 h-6 text-primary" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Wallet className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-heading font-bold tracking-tight">MoneyTrack</h1>
+              <p className="text-xs text-muted-foreground">Smart finance management</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-heading font-bold tracking-tight">MoneyTrack</h1>
-            <p className="text-xs text-muted-foreground">Smart finance management</p>
-          </div>
+          <ThemeToggle />
         </div>
       </header>
 
