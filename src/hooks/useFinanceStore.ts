@@ -160,11 +160,29 @@ export function useFinanceStore() {
       || { month: monthNames[now.getMonth()], year: now.getFullYear(), income: 0, expense: 0, net: 0 };
   }, [monthlyData]);
 
+  const fetchPaginatedTransactions = useCallback(async (page: number, limit: number, filterType: string, filterAccount: string) => {
+    if (!token) return { count: 0, results: [] };
+    let url = `${API_BASE}/transactions/?page=${page}&limit=${limit}`;
+    if (filterType !== 'all') url += `&type=${filterType}`;
+    if (filterAccount !== 'all') url += `&accountId=${filterAccount}`;
+
+    try {
+      const res = await fetch(url, { headers: getHeaders() });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.error('Failed to fetch paginated transactions', err);
+    }
+    return { count: 0, results: [] };
+  }, [getHeaders, token]);
+
   return {
     accounts, transactions, loading,
     addAccount, deleteAccount,
     addTransaction, updateTransaction, deleteTransaction,
     totalIncome, totalExpense, balance,
     getAccountBalance, monthlyData, currentMonthData,
+    fetchPaginatedTransactions,
   };
 }

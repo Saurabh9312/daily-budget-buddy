@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Lock, User, LogIn, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,12 +16,49 @@ export default function Login() {
     const navigate = useNavigate();
     const { toast } = useToast();
 
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+
+            // Optionally, automatically prompt them when they arrive on the login page:
+            setTimeout(() => {
+                const wantToInstall = window.confirm("Would you like to install the App for a better experience?");
+                if (wantToInstall) {
+                    e.prompt();
+                    e.userChoice.then((choiceResult: any) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            setDeferredPrompt(null);
+                        }
+                    });
+                }
+            }, 1000);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
+    const handleInstall = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setDeferredPrompt(null);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
             await login(username, password, remember);
             toast({ title: 'Success', description: 'Logged in successfully' });
+            // Let the user install the app if they chose not to before logging in
+            if (deferredPrompt) {
+                handleInstall();
+            }
             navigate('/');
         } catch (err: any) {
             toast({ variant: 'destructive', title: 'Error', description: err.message || 'Login failed' });

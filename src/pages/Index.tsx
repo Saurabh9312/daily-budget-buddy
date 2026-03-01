@@ -99,6 +99,7 @@ const Index = () => {
               accounts={store.accounts}
               onEdit={setEditingTx}
               onDelete={store.deleteTransaction}
+              fetchPaginatedTransactions={store.fetchPaginatedTransactions}
             />
           </div>
         </div>
