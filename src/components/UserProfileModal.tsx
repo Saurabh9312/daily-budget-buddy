@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Camera, User as UserIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Camera, User as UserIcon, Download } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -22,10 +22,36 @@ export default function UserProfileModal() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
 
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
+    const handleInstall = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setDeferredPrompt(null);
+        }
+    };
+
+    const getProfilePicUrl = (url?: string | null) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `https://daily-budget-buddy-backend.onrender.com${url}`;
+    };
+
     const handleOpen = () => {
         setName(profile?.name || '');
         setDob(profile?.dob || '');
-        setPreview(profile?.profile_picture ? `https://daily-budget-buddy-backend.onrender.com${profile.profile_picture}` : null);
+        setPreview(getProfilePicUrl(profile?.profile_picture) || null);
         setFile(null);
         setOpen(true);
     };
@@ -59,7 +85,7 @@ export default function UserProfileModal() {
         }
     };
 
-    const avatarSrc = profile?.profile_picture ? `https://daily-budget-buddy-backend.onrender.com${profile.profile_picture}` : null;
+    const avatarSrc = getProfilePicUrl(profile?.profile_picture);
 
     return (
         <Dialog open={open} onOpenChange={(val) => {
@@ -128,6 +154,15 @@ export default function UserProfileModal() {
                     <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? 'Saving...' : 'Save Profile'}
                     </Button>
+
+                    {deferredPrompt && (
+                        <div className="pt-2 border-t border-border">
+                            <Button type="button" variant="outline" className="w-full gap-2" onClick={handleInstall}>
+                                <Download className="w-4 h-4" />
+                                Download App
+                            </Button>
+                        </div>
+                    )}
                 </form>
             </DialogContent>
         </Dialog>

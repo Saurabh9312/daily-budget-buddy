@@ -75,7 +75,18 @@ const Index = () => {
             />
             <AccountManager
               accounts={store.accounts}
-              addAccount={store.addAccount}
+              addAccount={async (name, balance) => {
+                const acc = await store.addAccount(name);
+                if (acc && balance !== 0) {
+                  await store.addTransaction({
+                    amount: Math.abs(balance).toString(),
+                    type: balance > 0 ? 'income' : 'expense',
+                    description: 'Initial Balance',
+                    date: new Date().toISOString().split('T')[0],
+                    accountId: acc.id as string
+                  } as any);
+                }
+              }}
               deleteAccount={store.deleteAccount}
               getAccountBalance={store.getAccountBalance}
             />

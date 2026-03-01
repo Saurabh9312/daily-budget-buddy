@@ -6,7 +6,7 @@ import { BankAccount } from '@/types/finance';
 
 interface AccountManagerProps {
   accounts: BankAccount[];
-  addAccount: (name: string) => Promise<any> | void;
+  addAccount: (name: string, balance: number) => Promise<any> | void;
   deleteAccount: (id: string) => void;
   getAccountBalance: (id: string) => number;
 }
@@ -17,12 +17,14 @@ function formatCurrency(amount: number) {
 
 export default function AccountManager({ accounts, addAccount, deleteAccount, getAccountBalance }: AccountManagerProps) {
   const [newName, setNewName] = useState('');
+  const [initialBalance, setInitialBalance] = useState('');
 
   const handleAdd = () => {
     const trimmed = newName.trim();
     if (!trimmed) return;
-    addAccount(trimmed);
+    addAccount(trimmed, Number(initialBalance) || 0);
     setNewName('');
+    setInitialBalance('');
   };
 
   return (
@@ -32,11 +34,19 @@ export default function AccountManager({ accounts, addAccount, deleteAccount, ge
       </h3>
       <div className="flex gap-2">
         <Input
-          placeholder="Account name (e.g. SBI, HDFC)"
+          placeholder="Account name (e.g. SBI)"
           value={newName}
           onChange={e => setNewName(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="bg-secondary border-border"
+          className="bg-secondary border-border flex-1"
+        />
+        <Input
+          placeholder="Initial Bal"
+          type="number"
+          value={initialBalance}
+          onChange={e => setInitialBalance(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          className="bg-secondary border-border w-24"
         />
         <Button onClick={handleAdd} size="sm" className="shrink-0">
           <Plus className="w-4 h-4 mr-1" /> Add
