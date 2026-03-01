@@ -1,8 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAuthStore } from './useAuthStore';
 import { BankAccount, Transaction, MonthlyData } from '@/types/finance';
-
-const API_BASE = 'https://daily-budget-buddy-backend.onrender.com/api';
+import { API_BASE } from '../config/api';
 
 const ACCOUNT_COLORS = [
   'hsl(160, 84%, 40%)',

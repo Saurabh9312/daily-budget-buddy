@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE } from '../config/api';
 
 interface AuthState {
     token: string | null;
@@ -8,8 +9,6 @@ interface AuthState {
     logout: () => void;
     initialize: () => void;
 }
-
-const API_BASE = 'https://daily-budget-buddy-backend.onrender.com/api';
 
 export const useAuthStore = create<AuthState>((set) => ({
     token: null,

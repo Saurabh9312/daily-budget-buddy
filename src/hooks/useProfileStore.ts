@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useAuthStore } from './useAuthStore';
+import { API_BASE } from '../config/api';
 
 interface UserProfile {
     username: string;
@@ -16,7 +17,6 @@ interface ProfileState {
     updateProfile: (data: FormData) => Promise<void>;
 }
 
-const API_BASE = 'https://daily-budget-buddy-backend.onrender.com/api';
 
 export const useProfileStore = create<ProfileState>((set) => ({
     profile: null,
